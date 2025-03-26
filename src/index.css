@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+html {
+  font-family: "Inter", sans-serif;
+  font-size: 18px; /* Increased base font size */
+  color: var(--primary-color);
+}
+
+.navbar-icon {
+  background-color: #f0f0f0; /* Light background for visibility */
+  background-size: cover;
+}
+
+.navbar-icon:hover {
+  background-color: #0073e6; /* Change background on hover */
+}
