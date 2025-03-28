@@ -6,10 +6,10 @@ import {
     FaCode,
     FaTrophy,
     FaChalkboardTeacher,
-    FaBriefcase
+    FaBullhorn,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-
+import Host from "../pages/Host";
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -70,21 +70,26 @@ const Navbar = () => {
                     </NavLink>
 
                     <NavLink
-                        to="/job-portal"
+                        to="/exam-updates"
                         className={({ isActive }) =>
                             `flex flex-col items-center ${isActive ? "text-blue-600" : "text-gray-600"}`
                         }
                     >
-                        <FaBriefcase className="text-xl lg:text-3xl" />
-                        <span className="text-xs lg:text-sm font-semibold">jobs</span>
+                        <FaBullhorn  className="text-xl lg:text-3xl" />
+                        <span className="text-xs lg:text-sm font-semibold">Exam Update</span>
                     </NavLink>
                 </div>
 
-                {/* Right Section */}
+                {/* Right Section 
+                className="hidden md:flex items-center gap-2 bg-blue-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-700"
+                 <NavLink to="/Host" className="px-4 py-2 text-gray-700 hover:text-blue-600">
+  Host
+</NavLink>
+                */}
                 <div className="flex items-center gap-2 lg:gap-4">
-                    <button className="hidden md:flex items-center gap-2 bg-blue-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-700">
-                        <span>Host</span>
-                    </button>
+                <NavLink to="/Host" className="hidden md:flex items-center gap-2 bg-blue-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-600">
+                  Host
+                 </NavLink>
                     <button className="hidden md:flex items-center gap-2 bg-yellow-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-yellow-600">
                         <span>Login</span>
                     </button>
@@ -139,18 +144,19 @@ const Navbar = () => {
                     </NavLink>
 
                     <NavLink
-                        to="/job-portal"
+                        to="/exam-updates"
                         className="flex items-center px-4 py-2 text-gray-600"
                         onClick={() => setIsOpen(false)}
                     >
-                        <FaBriefcase className="mr-2" />
-                        Jobs
+                        <FaBullhorn  className="mr-2" />
+                        Exam Update
                     </NavLink>
 
                     {/* Mobile Buttons */}
-                    <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-md">
-                        Host
-                    </button>
+                    <NavLink to="/Host" className="px-4 py-2 text-gray-700 hover:text-blue-600">
+  Host
+</NavLink>
+
                     <button className="w-full px-4 py-2 bg-yellow-500 text-white rounded-md">
                         Login
                     </button>

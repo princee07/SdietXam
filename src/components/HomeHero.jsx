@@ -1,5 +1,6 @@
 import React from "react";
-
+import { motion } from "framer-motion";
+import plane from "../images/paper-plane.png"
 const HomeHero = () => {
     const images = [
         {
@@ -77,7 +78,25 @@ const HomeHero = () => {
                     ))}
                 </div>
             </div>
-
+            <motion.img
+                src= {plane} // You can replace this with a better airplane icon
+                alt="Paper Airplane"
+               
+                className="absolute w-12 h-12"
+                initial={{ x: -50, y: 120, opacity: 0.8 }}
+                animate={{
+                    x: [0, 200, 250, 100, 0], // Moves in a circular pattern
+                    y: [300, 200, 100, 250, 300], // Moves up and then returns down
+                    rotate: [0, 20, 0, -20, 0], // Adds slight tilt for realism
+                    opacity: [1, 1, 1, 1, 1], // Keeps visibility constant
+                }}
+                transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                }}
+                style={{ bottom: "100%", left: "10%" }}
+            />
             {/* Decorative Elements */}
             <div
                 className="absolute left-10 top-1/4 w-10 h-24 bg-cover bg-no-repeat"

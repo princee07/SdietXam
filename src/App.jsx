@@ -6,7 +6,8 @@ import Mentor from "./pages/Mentor";
 import Practice from "./pages/Practice";
 import Leaderboard from "./pages/Leaderboard";
 import Layout from "./components/Layout";
-
+import ExamUpdates from "./pages/ExamUpdates";
+import Host from "./pages/Host";
 const App = () => {
   return (
     <Router>
@@ -18,6 +19,8 @@ const App = () => {
           <Route path="mentor" element={<Mentor />} />
           <Route path="practice" element={<Practice />} />
           <Route path="leaderboard" element={<Leaderboard />} />
+          <Route path="exam-updates" element={<ExamUpdates />} />
+          <Route path="/host" element={<Host />} />
         </Route>
       </Routes>
     </Router>
