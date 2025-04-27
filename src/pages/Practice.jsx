@@ -1,9 +1,15 @@
-
-import { Link } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import Experts from "../images/Experts.png"; // Replace with your actual image path
 
 const Practice = () => {
+  const navigate = useNavigate();
 
+  const programs = [
+    { id: 1, title: "B.Tech", description: "Practice quizzes for B.Tech students.", link: "/practice/btech", bgColor: "bg-blue-100", textColor: "text-blue-600" },
+    { id: 2, title: "BBA", description: "Practice quizzes for BBA students.", link: "/practice/bba", bgColor: "bg-green-100", textColor: "text-green-600" },
+    { id: 3, title: "BCA", description: "Practice quizzes for BCA students.", link: "/practice/bca", bgColor: "bg-orange-100", textColor: "text-orange-600" },
+  ];
 
   return (
     <div>
@@ -35,9 +41,28 @@ const Practice = () => {
         </div>
       </section>
 
-     
+      {/* Program Cards Section */}
+      <section className="py-8 bg-white">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-6">Choose Your Program</h2>
 
-      
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {programs.map((program) => (
+              <div
+                key={program.id}
+                className={`p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer ${program.bgColor}`}
+                onClick={() => navigate(program.link)}
+              >
+                <h3 className={`text-2xl font-bold mb-2 ${program.textColor}`}>{program.title}</h3>
+                <p className="text-gray-700">{program.description}</p>
+                <span className="text-blue-500 font-medium hover:underline mt-4 block">
+                  Explore Quizzes →
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

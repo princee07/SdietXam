@@ -1,13 +1,13 @@
 import React from "react";
-import Navbar from "./Navbar";
 import { Outlet } from "react-router-dom";
+import Navbar from "./Navbar";
 
 const Layout = () => {
   return (
     <div>
       <Navbar />
-      <main className="mt-16 px-8">
-        <Outlet />
+      <main className="p-4">
+        <Outlet /> {/* Child pages will render here */}
       </main>
     </div>
   );
