@@ -10,32 +10,25 @@ const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const openModal = () => {
-    console.log("Login button clicked"); // Debugging
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    console.log("Modal closed"); // Debugging
-    setIsModalOpen(false);
-  };
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   // Debugging currentUser
-  console.log("Current User:", currentUser);
+  console.log("Current User in Navbar:", currentUser);
 
   return (
     <nav className="border-b border-gray-200 bg-white sticky top-0 z-10">
       <div className="container mx-auto flex justify-between items-center h-20 px-4 lg:h-28">
         {/* Left Section */}
         <div className="flex items-center">
-        <NavLink to={currentUser && currentUser.role === "host" ? "/host-dashboard" : "/"}>
+          <NavLink to={currentUser?.role === "host" ? "/host-dashboard" : "/"}>
             <img src={logo} alt="logo" className="h-16 w-auto lg:h-36 object-contain" />
           </NavLink>
         </div>
 
         {/* Center Section */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          {currentUser && currentUser.role === "host" ? (
+          {currentUser?.role === "host" ? (
             <>
               <NavLink
                 to="/quiz"
@@ -81,14 +74,12 @@ const Navbar = () => {
         {/* Right Section */}
         <div className="flex items-center gap-2 lg:gap-4">
           {currentUser ? (
-            <>
-              <button
-                onClick={logout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Logout
-              </button>
-            </>
+            <button
+              onClick={logout}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Logout
+            </button>
           ) : (
             <>
               <NavLink to="/Host" className="hidden md:flex items-center gap-2 bg-blue-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-600">

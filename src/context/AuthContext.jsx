@@ -6,23 +6,23 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
-    // Retrieve user from localStorage on initialization
     const storedUser = localStorage.getItem("currentUser");
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
   const login = (user) => {
-    setCurrentUser(user);
-    localStorage.setItem("currentUser", JSON.stringify(user)); // Save user to localStorage
+    // Ensure the user object contains the role
+    const userWithRole = { ...user, role: "host" }; // Add role dynamically if needed
+    setCurrentUser(userWithRole);
+    localStorage.setItem("currentUser", JSON.stringify(userWithRole));
   };
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem("currentUser"); // Remove user from localStorage
+    localStorage.removeItem("currentUser");
   };
 
   useEffect(() => {
-    // Optional: Sync state with localStorage if needed
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
