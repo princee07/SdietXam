@@ -28,7 +28,7 @@ const Navbar = () => {
       <div className="container mx-auto flex justify-between items-center h-20 px-4 lg:h-28">
         {/* Left Section */}
         <div className="flex items-center">
-          <NavLink to="/">
+        <NavLink to={currentUser && currentUser.role === "host" ? "/host-dashboard" : "/"}>
             <img src={logo} alt="logo" className="h-16 w-auto lg:h-36 object-contain" />
           </NavLink>
         </div>

@@ -1,45 +1,122 @@
 import React, { useState } from "react";
 
 const CreateQuiz = () => {
-  const [selectedDomain, setSelectedDomain] = useState("");
+  const [semester, setSemester] = useState("");
+  const [hostName, setHostName] = useState("");
+  const [subjectName, setSubjectName] = useState("");
   const [questions, setQuestions] = useState([]);
   const [newQuestion, setNewQuestion] = useState({ question: "", options: ["", "", "", ""], correctAnswer: "" });
 
-  const domains = ["Mathematics", "Physics", "Computer Science", "Mechanical Engineering", "Civil Engineering"];
+  const semesters = [
+    "Semester 1",
+    "Semester 2",
+    "Semester 3",
+    "Semester 4",
+    "Semester 5",
+    "Semester 6",
+    "Semester 7",
+    "Semester 8",
+  ];
+
+  const subjectsBySemester = {
+    "Semester 1": ["Mathematics I", "Physics I", "Chemistry", "Introduction to Programming"],
+    "Semester 2": ["Mathematics II", "Physics II", "Data Structures", "Basic Electronics"],
+    "Semester 3": ["Discrete Mathematics", "Computer Architecture", "Operating Systems", "Database Systems"],
+    "Semester 4": ["Algorithms", "Software Engineering", "Computer Networks", "Theory of Computation"],
+    "Semester 5": ["Artificial Intelligence", "Machine Learning", "Web Development", "Mobile Computing"],
+    "Semester 6": ["Cloud Computing", "Big Data", "Cyber Security", "Blockchain"],
+    "Semester 7": ["Advanced Algorithms", "IoT", "Natural Language Processing", "Data Visualization"],
+    "Semester 8": ["Project Work", "Internship", "Research Paper", "Elective Subjects"],
+  };
 
   const handleAddQuestion = () => {
+    if (!newQuestion.question || newQuestion.options.some((opt) => !opt) || !newQuestion.correctAnswer) {
+      alert("Please fill out all fields before adding a question.");
+      return;
+    }
     setQuestions([...questions, newQuestion]);
     setNewQuestion({ question: "", options: ["", "", "", ""], correctAnswer: "" });
   };
 
   const handleSubmitQuiz = () => {
+    if (!semester || !hostName || !subjectName) {
+      alert("Please fill out all fields for Semester, Host Name, and Subject Name.");
+      return;
+    }
+    if (questions.length === 0) {
+      alert("Please add at least one question.");
+      return;
+    }
     // Submit the quiz to the backend
-    console.log({ domain: selectedDomain, questions });
+    console.log({ semester, hostName, subjectName, questions });
     alert("Quiz created successfully!");
+    setSemester("");
+    setHostName("");
+    setSubjectName("");
+    setQuestions([]);
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Create a Quiz</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">Create a Quiz</h1>
 
-      {/* Domain Selection */}
+      {/* Semester Field */}
       <div className="mb-6">
-        <label htmlFor="domain" className="block text-lg font-semibold mb-2">
-          Select Domain:
+        <label htmlFor="semester" className="block text-lg font-semibold mb-2">
+          Select Semester:
         </label>
         <select
-          id="domain"
-          value={selectedDomain}
-          onChange={(e) => setSelectedDomain(e.target.value)}
+          id="semester"
+          value={semester}
+          onChange={(e) => {
+            setSemester(e.target.value);
+            setSubjectName(""); // Reset subject when semester changes
+          }}
           className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="">-- Select Domain --</option>
-          {domains.map((domain, index) => (
-            <option key={index} value={domain}>
-              {domain}
+          <option value="">-- Select Semester --</option>
+          {semesters.map((sem, index) => (
+            <option key={index} value={sem}>
+              {sem}
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Subject Name Field */}
+      {semester && (
+        <div className="mb-6">
+          <label htmlFor="subjectName" className="block text-lg font-semibold mb-2">
+            Select Subject:
+          </label>
+          <select
+            id="subjectName"
+            value={subjectName}
+            onChange={(e) => setSubjectName(e.target.value)}
+            className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">-- Select Subject --</option>
+            {subjectsBySemester[semester]?.map((subject, index) => (
+              <option key={index} value={subject}>
+                {subject}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Host Name Field */}
+      <div className="mb-6">
+        <label htmlFor="hostName" className="block text-lg font-semibold mb-2">
+          Host Name:
+        </label>
+        <input
+          id="hostName"
+          type="text"
+          value={hostName}
+          onChange={(e) => setHostName(e.target.value)}
+          className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
 
       {/* Add Questions */}
