@@ -38,7 +38,7 @@ const CreateQuiz = () => {
     setNewQuestion({ question: "", options: ["", "", "", ""], correctAnswer: "" });
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     if (!semester || !hostName || !subjectName) {
       alert("Please fill out all fields for Semester, Host Name, and Subject Name.");
       return;
@@ -47,13 +47,39 @@ const CreateQuiz = () => {
       alert("Please add at least one question.");
       return;
     }
-    // Submit the quiz to the backend
-    console.log({ semester, hostName, subjectName, questions });
-    alert("Quiz created successfully!");
-    setSemester("");
-    setHostName("");
-    setSubjectName("");
-    setQuestions([]);
+
+    const quizData = {
+      title: `${subjectName} - ${semester}`,
+      description: `Quiz for ${subjectName} hosted by ${hostName}`,
+      questions,
+      semester,
+      subject: subjectName,
+      hostName,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/quizzes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(quizData),
+      });
+
+      if (response.ok) {
+        alert("Quiz created successfully!");
+        setSemester("");
+        setHostName("");
+        setSubjectName("");
+        setQuestions([]);
+      } else {
+        const error = await response.json();
+        alert(`Failed to create quiz: ${error.error}`);
+      }
+    } catch (err) {
+      console.error("Error creating quiz:", err);
+      alert("An error occurred while creating the quiz.");
+    }
   };
 
   return (

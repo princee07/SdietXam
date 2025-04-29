@@ -1,32 +1,23 @@
-import express from 'express';
-
+import express from "express";
 import {
-    createQuiz,
-    getAllQuizzes,
-    getQuizById,
-    submitQuiz,
-}from "../controllers/quizController.js"
+  createQuiz,
+  getAllQuizzes,
+  getQuizById,
+  submitQuiz,
+} from "../controllers/quizController.js";
 
 const router = express.Router();
 
+// Create a new quiz
+router.post("/", createQuiz);
 
-//cretae a new quiz
-router.post('/',createQuiz)
+// Get all quizzes
+router.get("/", getAllQuizzes); // Changed to GET for fetching quizzes
 
+// Get a specific quiz by ID
+router.get("/:id", getQuizById);
 
-//get all quizzes
-
-router.post('/',getAllQuizzes)
-
-//get a specific quiz by id
-router.get('/:id',getQuizById)
-
-//submit quiz ans
-router.post('/submit/:id',submitQuiz)
-
-router.post("/", (req, res) => {
-  console.log("POST /api/quizzes hit");
-  res.send("Route is working");
-});
+// Submit quiz answers
+router.post("/submit/:id", submitQuiz);
 
 export default router;

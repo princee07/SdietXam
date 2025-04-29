@@ -1,59 +1,53 @@
 import Quiz from "../models/Quiz.js";
 
-// creatae a new Quiz
-
-export const createQuiz  = async (req,res)=>{
-    try{
-         const quiz = new Quiz(req.body);
-         await quiz.save();
-         res.status(201).json(quiz);
-    }catch(err){
-         res.status(500).json({error: err.message});
-    }
+// Create a new quiz
+export const createQuiz = async (req, res) => {
+  try {
+    const quiz = new Quiz(req.body);
+    await quiz.save();
+    res.status(201).json(quiz);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create quiz" });
+  }
 };
 
-// get all quizzes
+// Get all quizzes
+export const getAllQuizzes = async (req, res) => {
+  const { semester, subject } = req.query; // Optional filters
+  try {
+    const query = {};
+    if (semester) query.semester = semester;
+    if (subject) query.subject = subject;
 
-export const getAllQuizzes = async (req,res)=>{
-    try{
-        const quizzes =await Quiz.find();
-         res.status(200).json({message:"Quizzes fetched Successfully",quizzes});
-    }catch(err){
-        res.status(500).json({message:"Internal server error",err})
-    }
-}
+    const quizzes = await Quiz.find(query);
+    res.json(quizzes);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch quizzes" });
+  }
+};
 
-
-// get a specific quix by id 
-
-export const getQuizById = async (req,res)=>{
-   try{
+// Get a specific quiz by ID
+export const getQuizById = async (req, res) => {
+  try {
     const quiz = await Quiz.findById(req.params.id);
-    if(!quiz) return res.status(400).json({message:"Quiz not found"})
-        res.staus(200).json({messaage:"Quiz fetched Successfully",quiz})
-   }catch(err){
-       res.staus(500).json({message:"Internal server error",err})
-   }
-}
+    if (!quiz) {
+      return res.status(404).json({ error: "Quiz not found" });
+    }
+    res.json(quiz);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch quiz" });
+  }
+};
 
+// Submit quiz answers
+export const submitQuiz = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { answers } = req.body;
 
-// Submit Quiz Ans
-
-export const submitQuiz = async(req,res)=>{
-    try{
-        const quiz = await Quiz.findById(req.params.id);
-        if(!quiz)  return res.status(400).json({message:"Quiz not found"})
-            const {answer}= req.body;
-           let score = 0;
-           
-           quiz.question.forEach((question,index)=>{
-            if(question.correctAnswer ===answer[index]){
-                score++;
-            }
-           })
-
-           res.status(200).json({score,total: quiz.questions.length})
-     }catch(err){
-        res.status(500).json({error:err.message})
-     }
-}
+    // Logic to evaluate answers can go here
+    res.json({ message: "Quiz submitted successfully", answers });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to submit quiz" });
+  }
+};

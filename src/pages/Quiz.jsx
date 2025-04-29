@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const Notes = () => {
+const  Quiz = () => {
   const navigate = useNavigate();
   const handleCardClick = (category) => {
     navigate(`/quiz/create-quiz/${category}`);
@@ -59,4 +59,4 @@ const Notes = () => {
   );
 };
 
-export default Notes;
+export default Quiz;

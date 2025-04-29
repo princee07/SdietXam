@@ -12,8 +12,7 @@ app.use(cors());
 app.use(express.json()); // Middleware to parse JSON requests
 
 // Routes
-console.log("Quiz routes loaded");
-app.use("/api/quizzes", quizRoutes); // Ensure this is correctly set up
+app.use("/api/quizzes", quizRoutes); // Use quiz routes
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
