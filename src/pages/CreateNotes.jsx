@@ -11,27 +11,55 @@ const CreateNotes = () => {
   const [date, setDate] = useState("");
   const [file, setFile] = useState(null);
 
-  const handleUpload = (e) => {
+  // Mapping of semesters to subjects
+  const semesterSubjects = {
+    "Semester 1": ["Mathematics", "Physics", "Chemistry"],
+    "Semester 2": ["Data Structures", "Digital Logic", "Mathematics II"],
+    "Semester 3": ["Operating Systems", "Database Management Systems", "Computer Networks"],
+    "Semester 4": ["Algorithms", "Software Engineering", "Discrete Mathematics"],
+    "Semester 5": ["Artificial Intelligence", "Machine Learning", "Cloud Computing"],
+    "Semester 6": ["Cyber Security", "Big Data", "Internet of Things"],
+    "Semester 7": ["Blockchain", "Quantum Computing", "Advanced Networking"],
+    "Semester 8": ["Project Management", "Entrepreneurship", "Research Methodology"],
+  };
+
+  const handleUpload = async (e) => {
     e.preventDefault();
+
     if (title && description && semester && subject && senderName && date && file) {
-      console.log({
-        category,
-        title,
-        description,
-        semester,
-        subject,
-        senderName,
-        date,
-        fileName: file.name,
-      });
-      setTitle("");
-      setDescription("");
-      setSemester("");
-      setSubject("");
-      setSenderName("");
-      setDate("");
-      setFile(null);
-      alert(`Note for ${category.toUpperCase()} uploaded successfully!`);
+      try {
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("description", description);
+        formData.append("semester", semester);
+        formData.append("subject", subject);
+        formData.append("senderName", senderName);
+        formData.append("date", date);
+        formData.append("file", file);
+
+        const response = await fetch("http://localhost:5000/api/notes", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          alert("Notes uploaded successfully!");
+          setTitle("");
+          setDescription("");
+          setSemester("");
+          setSubject("");
+          setSenderName("");
+          setDate("");
+          setFile(null);
+        } else {
+          alert("Failed to upload notes. Please try again.");
+        }
+      } catch (err) {
+        console.error("Error uploading notes:", err);
+        alert("An error occurred while uploading notes.");
+      }
+    } else {
+      alert("Please fill out all fields before uploading.");
     }
   };
 
@@ -93,19 +121,19 @@ const CreateNotes = () => {
               <select
                 id="semester"
                 value={semester}
-                onChange={(e) => setSemester(e.target.value)}
+                onChange={(e) => {
+                  setSemester(e.target.value);
+                  setSubject(""); // Reset subject when semester changes
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 <option value="">Select Semester</option>
-                <option value="1">Semester 1</option>
-                <option value="2">Semester 2</option>
-                <option value="3">Semester 3</option>
-                <option value="4">Semester 4</option>
-                <option value="5">Semester 5</option>
-                <option value="6">Semester 6</option>
-                <option value="7">Semester 7</option>
-                <option value="8">Semester 8</option>
+                {Object.keys(semesterSubjects).map((sem) => (
+                  <option key={sem} value={sem}>
+                    {sem}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -117,15 +145,22 @@ const CreateNotes = () => {
               >
                 Subject
               </label>
-              <input
+              <select
                 id="subject"
-                type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter subject name"
                 required
-              />
+                disabled={!semester} // Disable if no semester is selected
+              >
+                <option value="">Select Subject</option>
+                {semester &&
+                  semesterSubjects[semester].map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+              </select>
             </div>
 
             {/* Sender Name */}
@@ -195,7 +230,7 @@ const CreateNotes = () => {
         {/* Right Section: Illustration or Info */}
         <div className="flex flex-col items-center justify-center text-center">
           <img
-            src="https://via.placeholder.com/400x300"
+            src="https://dummyimage.com/400x300/cccccc/000000&text=Placeholder"
             alt="Illustration"
             className="mb-6 rounded-lg shadow-lg"
           />
