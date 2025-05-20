@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaGoogle, FaTimes, FaUserGraduate, FaChalkboard, FaEnvelope, FaLock, FaSchool, FaIdCard, FaBookReader, FaCalendarAlt, FaChalkboardTeacher, FaUserTie } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 
@@ -6,6 +6,7 @@ const LoginSignupModal = ({ type, closeModal }) => {
   // States for form toggle
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   // Student form states
   const [studentForm, setStudentForm] = useState({
@@ -28,7 +29,7 @@ const LoginSignupModal = ({ type, closeModal }) => {
   });
   
   // Auth context (modify according to your authentication implementation)
-  const { login, signup, googleSignIn } = useAuth();
+  const { login, signup, googleSignIn, isOnline } = useAuth();
 
   // Handle form toggle
   const toggleForm = () => {
@@ -57,6 +58,11 @@ const LoginSignupModal = ({ type, closeModal }) => {
   const handleStudentSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    if (!isOnline) {
+      setError("You must be online to perform this action.");
+      return;
+    }
     
     try {
       if (isLogin) {
@@ -91,10 +97,17 @@ const LoginSignupModal = ({ type, closeModal }) => {
     e.preventDefault();
     setIsLoading(true);
     
+    if (!isOnline) {
+      setError("You must be online to perform this action.");
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       if (isLogin) {
         // Login logic
         await login(hostForm.email, hostForm.password, "host");
+        // No need to navigate here, login function will handle it
       } else {
         // Signup logic
         await signup(
@@ -107,11 +120,12 @@ const LoginSignupModal = ({ type, closeModal }) => {
             teachingCourse: hostForm.course
           }
         );
+        // No need to navigate here, signup function will handle it
       }
       closeModal();
     } catch (error) {
       console.error("Authentication error:", error);
-      alert(error.message);
+      setError(error.message); // Use setError instead of alert for consistent UI
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +144,14 @@ const LoginSignupModal = ({ type, closeModal }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!isOnline) {
+      setError("You're offline. Please connect to the internet to login or signup.");
+    } else {
+      setError(null);
+    }
+  }, [isOnline]);
 
   return (
     <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
@@ -161,6 +183,13 @@ const LoginSignupModal = ({ type, closeModal }) => {
             }
           </p>
         </div>
+        
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
         
         {/* Student Form */}
         {type === "user" && (
