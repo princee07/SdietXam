@@ -20,7 +20,7 @@ import CreateNotes from "./pages/CreateNotes";
 import CreateQuiz from "./pages/CreateQuiz";
 import SubjectSelection from "./pages/SubjectSelection";
 import QuizPage from "./pages/QuizPage";
-
+import HostProfile from "./pages/HostProfile";
 
 const App = () => {
 return (
@@ -46,7 +46,7 @@ return (
         <Route path="/notes/create-notes/:category" element={<CreateNotes />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/quiz/create-quiz/:category" element={<CreateQuiz />} />
-      
+      <Route path="/host-profile" element={<HostProfile />} />
       </Route>
     </Routes>
   </Router>
