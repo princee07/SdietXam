@@ -53,7 +53,7 @@ const Navbar = () => {
             [
               { to: "/courses", icon: <FaBook />, label: "Learn" },
               { to: "/practice", icon: <FaCode />, label: "Practice" },
-              { to: "/compete", icon: <FaTrophy />, label: "Compete" },
+              { to: "/Leaderboard", icon: <FaTrophy />, label: "Compete" },
               { to: "/mentor", icon: <FaChalkboardTeacher />, label: "Mentorship" },
               { to: "/exam-updates", icon: <FaBullhorn />, label: "Exam Update" },
             ].map((item, index) => (

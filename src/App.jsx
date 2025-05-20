@@ -46,7 +46,7 @@ return (
         <Route path="/notes/create-notes/:category" element={<CreateNotes />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/quiz/create-quiz/:category" element={<CreateQuiz />} />
-       
+      
       </Route>
     </Routes>
   </Router>
