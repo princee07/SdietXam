@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { 
   FaBook, FaCode, FaTrophy, FaChalkboardTeacher, FaBullhorn, 
-  FaStickyNote, FaUserCircle, FaChartArea, FaFileAlt 
+  FaStickyNote, FaUserCircle, FaChartArea, FaFileAlt,
+  FaUserGraduate, FaChalkboard, FaAngleDown
 } from "react-icons/fa";
 import logo from "../assets/logo.svg";
 import { useAuth } from "../context/AuthContext";
@@ -12,9 +13,35 @@ const Navbar = () => {
   const { currentUser, logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [loginType, setLoginType] = useState("user"); // "user" or "host"
+  const [showLoginOptions, setShowLoginOptions] = useState(false);
+  const loginOptionsRef = useRef(null);
 
-  const openModal = () => setIsModalOpen(true);
+  const openModal = (type) => {
+    setLoginType(type);
+    setIsModalOpen(true);
+    setShowLoginOptions(false);
+  };
+
   const closeModal = () => setIsModalOpen(false);
+
+  const toggleLoginOptions = () => {
+    setShowLoginOptions(!showLoginOptions);
+  };
+
+  // Close login options dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (loginOptionsRef.current && !loginOptionsRef.current.contains(event.target)) {
+        setShowLoginOptions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Host navigation links with icons
   const hostLinks = [
@@ -89,12 +116,37 @@ const Navbar = () => {
               <NavLink to="/Host" className="hidden md:flex items-center gap-2 bg-blue-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-600 transition-colors duration-200">
                 Host
               </NavLink>
-              <button
-                onClick={openModal}
-                className="hidden md:flex items-center gap-2 bg-yellow-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-yellow-600 transition-colors duration-200"
-              >
-                <span>Login</span>
-              </button>
+              
+              {/* Login Button with Dropdown */}
+              <div className="relative" ref={loginOptionsRef}>
+                <button
+                  onClick={toggleLoginOptions}
+                  className="hidden md:flex items-center gap-2 bg-yellow-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-yellow-600 transition-colors duration-200"
+                >
+                  <span>Login</span>
+                  <FaAngleDown className={`transition-transform ${showLoginOptions ? "rotate-180" : ""}`} />
+                </button>
+                
+                {/* Login Options Dropdown */}
+                {showLoginOptions && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                    <button
+                      onClick={() => openModal("user")}
+                      className="flex items-center w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <FaUserGraduate className="mr-3 text-yellow-500" />
+                      <span>Login as Student</span>
+                    </button>
+                    <button
+                      onClick={() => openModal("host")}
+                      className="flex items-center w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <FaChalkboard className="mr-3 text-blue-500" />
+                      <span>Login as Host</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
@@ -170,15 +222,28 @@ const Navbar = () => {
                   >
                     Host
                   </NavLink>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      openModal();
-                    }}
-                    className="w-full py-3 bg-yellow-500 text-white rounded-lg text-center font-medium"
-                  >
-                    Login
-                  </button>
+                  
+                  {/* Mobile Login Options */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        openModal("user");
+                        setIsOpen(false);
+                      }}
+                      className="py-3 bg-yellow-500 text-white rounded-lg text-center font-medium flex items-center justify-center"
+                    >
+                      <FaUserGraduate className="mr-2" /> Student Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        openModal("host");
+                        setIsOpen(false);
+                      }}
+                      className="py-3 bg-blue-600 text-white rounded-lg text-center font-medium flex items-center justify-center"
+                    >
+                      <FaChalkboard className="mr-2" /> Host Login
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -186,8 +251,8 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* Render LoginSignupModal */}
-      {isModalOpen && <LoginSignupModal type="login" closeModal={closeModal} />}
+      {/* Render LoginSignupModal with appropriate type */}
+      {isModalOpen && <LoginSignupModal type={loginType} closeModal={closeModal} />}
     </nav>
   );
 };
