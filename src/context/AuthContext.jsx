@@ -143,13 +143,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Sign in with Google
+  // Update the googleSignIn function with improved profile handling
   const googleSignIn = async (role) => {
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
+      // Add scopes to request additional profile info if needed
+      provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      
+      // Extract all possible profile info from Google
+      const profileData = {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || "",
+        photoURL: user.photoURL || "",
+        role: role,
+        lastLogin: serverTimestamp(),
+        createdAt: serverTimestamp()
+      };
       
       // Check if user already exists in Firestore
       const userDocRef = doc(db, "users", user.uid);
@@ -161,23 +175,45 @@ export const AuthProvider = ({ children }) => {
           await signOut(auth);
           throw new Error(`This Google account is already registered as a ${userDoc.data().role}. Please use a different account.`);
         }
-      } else {
-        // Create new user document with role
+        
+        // Update last login time and any missing profile data
         await setDoc(userDocRef, {
-          uid: user.uid,
-          email: user.email,
-          name: user.displayName,
-          photoURL: user.photoURL,
-          role: role,
-          createdAt: serverTimestamp()
+          ...profileData,
+          createdAt: userDoc.data().createdAt, // Don't overwrite original creation date
+        }, { merge: true });
+        
+      } else {
+        // Create new user document with complete profile data from Google
+        // For hosts, add placeholder fields that they should complete later
+        const hostSpecificData = role === "host" ? {
+          position: "", // Will need to be filled out later
+          teachingCourse: "", // Will need to be filled out later
+          bio: "", // Optional additional information
+          department: "", // Optional additional information
+        } : {};
+        
+        await setDoc(userDocRef, {
+          ...profileData,
+          ...hostSpecificData
         });
+        
+        // For new hosts, we might want to redirect to a profile completion page
+        if (role === "host") {
+          // Set a flag to indicate profile needs completion
+          await setDoc(userDocRef, { profileComplete: false }, { merge: true });
+        }
       }
       
-      // Navigate based on role - AFTER all checks and operations
+      // Navigate based on role
       if (role === "host") {
-        navigate("/host-dashboard");
+        // If it's a new host account without complete profile, redirect to profile completion
+        if (!userDoc.exists() || !userDoc.data().profileComplete) {
+          navigate("/host-profile");
+        } else {
+          navigate("/host-dashboard");
+        }
       } else {
-        navigate("/");  // For student/user role
+        navigate("/"); // For student/user role
       }
       
       return user;
@@ -204,21 +240,84 @@ export const AuthProvider = ({ children }) => {
     if (!currentUser) throw new Error("No authenticated user");
     
     try {
+      // First update local state immediately for responsive UI
+      setCurrentUser(prev => ({
+        ...prev,
+        ...userData
+      }));
+
+      // If offline, store the update in localStorage to apply later
+      if (!navigator.onLine) {
+        const pendingUpdates = JSON.parse(localStorage.getItem('pendingProfileUpdates') || '{}');
+        localStorage.setItem('pendingProfileUpdates', JSON.stringify({
+          ...pendingUpdates,
+          [currentUser.uid]: {
+            ...pendingUpdates[currentUser.uid],
+            ...userData,
+            timestamp: Date.now()
+          }
+        }));
+        
+        // Return early with a specific offline error that we can handle
+        throw new Error("offline");
+      }
+      
+      // If online, proceed with Firestore update
       await setDoc(doc(db, "users", currentUser.uid), {
         ...userData,
         updatedAt: serverTimestamp()
       }, { merge: true });
       
-      // Update local user state
-      setCurrentUser(prev => ({
-        ...prev,
-        ...userData
-      }));
+      // If successful, clear any pending updates for this user
+      const pendingUpdates = JSON.parse(localStorage.getItem('pendingProfileUpdates') || '{}');
+      if (pendingUpdates[currentUser.uid]) {
+        delete pendingUpdates[currentUser.uid];
+        localStorage.setItem('pendingProfileUpdates', JSON.stringify(pendingUpdates));
+      }
+      
     } catch (err) {
-      setError(err.message);
-      throw err;
+      if (err.message !== "offline") {
+        setError(err.message);
+        throw err;
+      } else {
+        // For offline errors, throw a more descriptive error
+        throw new Error("You are offline. Changes will be saved when you reconnect.");
+      }
     }
   };
+
+  // Add this effect to sync pending updates when coming back online
+  useEffect(() => {
+    const syncPendingUpdates = async () => {
+      if (navigator.onLine && currentUser) {
+        const pendingUpdates = JSON.parse(localStorage.getItem('pendingProfileUpdates') || '{}');
+        
+        if (pendingUpdates[currentUser.uid]) {
+          try {
+            const userData = pendingUpdates[currentUser.uid];
+            await setDoc(doc(db, "users", currentUser.uid), {
+              ...userData,
+              updatedAt: serverTimestamp()
+            }, { merge: true });
+            
+            // Clear pending updates for this user after successful sync
+            delete pendingUpdates[currentUser.uid];
+            localStorage.setItem('pendingProfileUpdates', JSON.stringify(pendingUpdates));
+          } catch (err) {
+            console.error("Failed to sync pending profile updates:", err);
+          }
+        }
+      }
+    };
+    
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncPendingUpdates();
+    };
+    
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [currentUser]);
 
   // Make sure to provide the value and return children without any Router wrapper
   const value = {

@@ -17,16 +17,19 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Enable offline persistence - this allows read operations when offline
-enableIndexedDbPersistence(db)
-  .catch((err) => {
-    if (err.code === 'failed-precondition') {
-      // Multiple tabs open, persistence can only be enabled in one tab at a time
-      console.log('Persistence failed: Multiple tabs open');
-    } else if (err.code === 'unimplemented') {
-      // The current browser does not support all of the features required
-      console.log('Persistence is not available in this browser');
-    }
-  });
+// Enable offline persistence with better error handling
+enableIndexedDbPersistence(db, {
+  // Use synchronous initialization to ensure persistence is ready
+  synchronizeTabs: true
+}).catch((err) => {
+  console.warn("Firebase offline persistence error:", err.code, err.message);
+  if (err.code === 'failed-precondition') {
+    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time');
+    // Handle this case - perhaps show a notification to the user
+  } else if (err.code === 'unimplemented') {
+    console.warn('The current browser does not support all of the features required for offline persistence');
+    // Handle for unsupported browsers
+  }
+});
 
 export default app;
