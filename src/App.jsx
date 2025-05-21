@@ -7,7 +7,7 @@ import Practice from "./pages/Practice";
 import Leaderboard from "./pages/Leaderboard";
 import Layout from "./components/Layout";
 import ExamUpdates from "./pages/ExamUpdates";
-import Host from "./pages/Host";
+import Market from "./pages/Market";
 import BtechLearn from "./pages/BtechLearn";
 import BTechQuiz from "./pages/BTechQuiz";
 import HostDashboard from "./pages/HostDashboard";
@@ -35,7 +35,7 @@ const App = () => {
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="/btech-learn" element={<BtechLearn />} />
         <Route path="exam-updates" element={<ExamUpdates />} />
-        <Route path="/host" element={<Host />} />
+        <Route path="/market" element={<Market />} />
         <Route path="/practice/btech/subject-selection" element={<SubjectSelection />} />
         
         {/* Protected host routes */}

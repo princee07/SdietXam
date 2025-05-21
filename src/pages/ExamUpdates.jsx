@@ -171,7 +171,7 @@ const ExamUpdates = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 px-4 relative overflow-hidden">
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 z-0 text-white py-12 px-4 relative overflow-hidden">
         <div className="container mx-auto relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-8 md:mb-0">

@@ -12,7 +12,7 @@ const Courses = () => {
   return (
     <>
       {/* Hero Section with Enhanced Design */}
-      <section className="py-10 relative bg-gradient-to-b from-blue-50 to-white overflow-hidden">
+      <section className="py-10 relative z-0 bg-gradient-to-b from-blue-50 to-white overflow-hidden">
         <div className="container mx-auto flex flex-col lg:flex-row items-center gap-10 px-4 relative z-10">
           {/* Left Content */}
           <div className="text-center lg:text-left">

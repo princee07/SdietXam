@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { 
-  FaArrowRight, FaArrowLeft, FaCheckCircle, FaTimesCircle, 
-  FaChartBar, FaTrophy, FaRegLightbulb, FaSpinner, FaBook,
-  FaQuestionCircle, FaClipboardCheck
-} from "react-icons/fa";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { saveQuizResult } from "../services/quizResultService";
+
+// Import components
+import LoadingQuiz from "../components/quiz/LoadingQuiz";
+import EmptyQuizState from "../components/quiz/EmptyQuizState";
+import QuizHeader from "../components/quiz/QuizHeader";
+import QuestionCard from "../components/quiz/QuestionCard";
+import QuizNavigation from "../components/quiz/QuizNavigation";
+import QuizResults from "../components/quiz/QuizResults";
+import SubmitToLeaderboard from "../components/quiz/SubmitToLeaderboard";
 
 const QuizPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const semester = searchParams.get("semester");
   const subject = searchParams.get("subject");
 
+  // State
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState({});
-  
-  // New state variables for slide-based navigation
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -29,6 +34,7 @@ const QuizPage = () => {
   const [questionTimeStart, setQuestionTimeStart] = useState(Date.now());
   const [questionTimes, setQuestionTimes] = useState([]);
   const [slideTransition, setSlideTransition] = useState('fade-in');
+  const [showLeaderboardForm, setShowLeaderboardForm] = useState(false);
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -129,7 +135,10 @@ const QuizPage = () => {
       wrongAnswers: wrong,
       totalQuestions: totalQuestions,
       score: scorePercentage,
-      answerDetails: details
+      answerDetails: details,
+      quizTitle: currentQuiz.title,
+      subject: subject,
+      semester: semester
     };
   };
 
@@ -147,176 +156,99 @@ const QuizPage = () => {
     setQuizResults(results);
     setQuizSubmitted(true);
   };
+  
+  const handleSubmitToLeaderboard = async (userData) => {
+    try {
+      const quizResultData = {
+        name: userData.name,
+        course: userData.course.toLowerCase(), // Convert to lowercase to match your categories
+        score: quizResults.score,
+        correctAnswers: quizResults.correctAnswers,
+        wrongAnswers: quizResults.wrongAnswers,
+        quizTitle: quizResults.quizTitle,
+        subject: quizResults.subject,
+        semester: quizResults.semester,
+        timeSpent: Math.round(questionTimes.reduce((sum, time) => sum + time, 0)),
+        // Add any additional fields required for your leaderboard display
+        badges: Math.floor(quizResults.score / 10), // Example calculation
+        streak: 1,
+        // Add course-specific fields based on userData.course
+        ...(userData.course.toLowerCase() === "btech" ? {
+          course: "Computer Science", // Default value or get from userData
+          year: "1st", // Default value or get from userData
+        } : {
+          semester: "1st", // Default value or get from userData
+          specialization: userData.course.toLowerCase() === "bca" ? "Web Development" : "Marketing"
+        })
+      };
+      
+      // Send the quiz result to the server
+      await saveQuizResult(quizResultData);
+      
+      // Navigate to the leaderboard page with the new entry details
+      navigate('/leaderboard', { 
+        state: { 
+          newEntry: {
+            name: userData.name,
+            score: quizResults.score,
+            course: userData.course.toLowerCase()
+          } 
+        }
+      });
+    } catch (error) {
+      console.error("Error submitting score:", error);
+      alert("There was an issue submitting your score. Please try again.");
+    }
+  };
 
+  const retakeQuiz = () => {
+    setQuizSubmitted(false);
+    setCurrentQuestionIndex(0);
+    setQuestionTimes([]);
+    setShowLeaderboardForm(false);
+    
+    // Reset answers
+    const initialAnswers = {};
+    quizzes[currentQuizIndex].questions.forEach((_, index) => {
+      initialAnswers[index] = null;
+    });
+    setUserAnswers(initialAnswers);
+  };
+
+  // Render conditions
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
-        <FaSpinner className="text-5xl text-indigo-600 animate-spin mb-4" />
-        <p className="text-xl text-gray-700">Loading your quiz...</p>
-      </div>
-    );
+    return <LoadingQuiz />;
   }
 
   if (quizzes.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
-          <FaBook className="text-5xl text-indigo-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">No Quizzes Available</h1>
-          <p className="text-gray-600 mb-6">
-            There are no quizzes available for {subject} in Semester {semester} at this time.
-          </p>
-          <button 
-            onClick={() => window.history.back()}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
+    return <EmptyQuizState semester={semester} subject={subject} />;
   }
 
   // Display results if quiz is submitted
   if (quizSubmitted) {
-    const { correctAnswers, wrongAnswers, totalQuestions, score, answerDetails } = quizResults;
-    
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            {/* Results Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
-              <h1 className="text-3xl font-bold mb-2 flex items-center">
-                <FaChartBar className="mr-3" /> Quiz Results
-              </h1>
-              <p className="text-indigo-100">
-                {quizzes[currentQuizIndex].title}
-              </p>
-            </div>
-            
-            {/* Score Summary */}
-            <div className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className={`rounded-xl p-6 text-center shadow-md ${
-                  score >= 70 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : score >= 40 
-                      ? 'bg-yellow-50 text-yellow-800 border border-yellow-200'
-                      : 'bg-red-50 text-red-800 border border-red-200'
-                }`}>
-                  <FaTrophy className="text-4xl mx-auto mb-2" />
-                  <h2 className="text-3xl font-bold">{score}%</h2>
-                  <p className="text-sm opacity-80">Overall Score</p>
-                </div>
-                
-                <div className="bg-blue-50 rounded-xl p-6 text-center shadow-md border border-blue-200 text-blue-800">
-                  <FaCheckCircle className="text-4xl mx-auto mb-2" />
-                  <h2 className="text-3xl font-bold">{correctAnswers}</h2>
-                  <p className="text-sm opacity-80">Correct Answers</p>
-                </div>
-                
-                <div className="bg-pink-50 rounded-xl p-6 text-center shadow-md border border-pink-200 text-pink-800">
-                  <FaTimesCircle className="text-4xl mx-auto mb-2" />
-                  <h2 className="text-3xl font-bold">{wrongAnswers}</h2>
-                  <p className="text-sm opacity-80">Incorrect Answers</p>
-                </div>
-              </div>
-              
-              {/* Detailed Results */}
-              <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <FaClipboardCheck className="mr-2" /> Question Review
-              </h2>
-              
-              <div className="space-y-4 mb-6">
-                {answerDetails.map((detail, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-4 rounded-lg border ${
-                      detail.isCorrect 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-red-50 border-red-200'
-                    }`}
-                  >
-                    <div className="flex items-start">
-                      <div className={`rounded-full p-2 mr-3 ${
-                        detail.isCorrect 
-                          ? 'bg-green-200 text-green-700' 
-                          : 'bg-red-200 text-red-700'
-                        }`}>
-                        {detail.isCorrect 
-                          ? <FaCheckCircle /> 
-                          : <FaTimesCircle />}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-800">
-                          Question {index + 1}: {detail.question}
-                        </h3>
-                        <div className="mt-2 text-sm">
-                          <p className={detail.isCorrect ? "text-green-600" : "text-gray-600"}>
-                            Your answer: {detail.userAnswer || "No answer provided"}
-                          </p>
-                          {!detail.isCorrect && (
-                            <p className="text-red-600 mt-1">
-                              Correct answer: {detail.correctAnswer}
-                            </p>
-                          )}
-                          <p className="text-gray-500 mt-1">
-                            Time spent: {Math.round(detail.timeSpent)} seconds
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex flex-wrap justify-between items-center pt-6 border-t border-gray-200">
-                <div>
-                  {score >= 70 ? (
-                    <p className="text-green-600 font-medium flex items-center">
-                      <FaRegLightbulb className="mr-2" /> 
-                      Great job! You passed the quiz!
-                    </p>
-                  ) : score >= 40 ? (
-                    <p className="text-yellow-600 font-medium flex items-center">
-                      <FaRegLightbulb className="mr-2" />
-                      Almost there! A bit more study would help.
-                    </p>
-                  ) : (
-                    <p className="text-red-600 font-medium flex items-center">
-                      <FaRegLightbulb className="mr-2" />
-                      You might need to review this material.
-                    </p>
-                  )}
-                </div>
-                <button 
-                  onClick={() => {
-                    setQuizSubmitted(false);
-                    setCurrentQuestionIndex(0);
-                    setQuestionTimes([]);
-                    
-                    // Reset answers
-                    const initialAnswers = {};
-                    quizzes[currentQuizIndex].questions.forEach((_, index) => {
-                      initialAnswers[index] = null;
-                    });
-                    setUserAnswers(initialAnswers);
-                  }}
-                  className="mt-4 sm:mt-0 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow hover:shadow-lg transition-all transform hover:-translate-y-1"
-                >
-                  Retake Quiz
-                </button>
-              </div>
-            </div>
-          </div>
+          {showLeaderboardForm ? (
+            <SubmitToLeaderboard 
+              quizResults={quizResults}
+              onSubmit={handleSubmitToLeaderboard}
+              onCancel={() => setShowLeaderboardForm(false)}
+            />
+          ) : (
+            <QuizResults 
+              quizResults={quizResults}
+              quizTitle={quizzes[currentQuizIndex].title}
+              onRetakeQuiz={retakeQuiz}
+              onSubmitToLeaderboard={() => setShowLeaderboardForm(true)}
+            />
+          )}
         </div>
       </div>
     );
   }
 
-  // Display quiz questions as slides
+  // Display quiz questions
   const currentQuiz = quizzes[currentQuizIndex];
   const currentQuestion = currentQuiz.questions[currentQuestionIndex];
   const totalQuestions = currentQuiz.questions.length;
@@ -325,119 +257,30 @@ const QuizPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Quiz Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {currentQuiz.title}
-          </h1>
-          <p className="text-gray-600">{currentQuiz.description}</p>
-          
-          {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Progress</span>
-              <span>{currentQuestionIndex + 1} of {totalQuestions}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
-                style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+        <QuizHeader 
+          title={currentQuiz.title}
+          description={currentQuiz.description}
+          currentQuestion={currentQuestionIndex + 1}
+          totalQuestions={totalQuestions}
+        />
         
-        {/* Question Slide */}
-        <div className={`bg-white rounded-xl shadow-lg overflow-hidden mb-6 transition-all duration-300 ${slideTransition}`}>
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium flex items-center">
-                <FaQuestionCircle className="mr-2" /> 
-                Question {currentQuestionIndex + 1}
-              </h2>
-              <span className="bg-white text-indigo-600 px-3 py-1 rounded-full text-sm font-bold">
-                {Math.floor((currentQuestionIndex + 1) / totalQuestions * 100)}%
-              </span>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            <p className="text-xl font-medium text-gray-800 mb-6">
-              {currentQuestion.question}
-            </p>
-            
-            <div className="space-y-3">
-              {currentQuestion.options.map((option, oIndex) => {
-                const isSelected = userAnswers[currentQuestionIndex] === option;
-                
-                return (
-                  <label
-                    key={oIndex}
-                    className={`flex items-center p-4 rounded-lg cursor-pointer transition-all transform hover:-translate-y-1 ${
-                      isSelected 
-                        ? 'bg-indigo-100 border-2 border-indigo-500 shadow-md' 
-                        : 'bg-white border border-gray-200 hover:border-indigo-300 hover:shadow'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 flex items-center justify-center rounded-full mr-3 ${
-                      isSelected 
-                        ? 'bg-indigo-500 text-white' 
-                        : 'border-2 border-gray-300'
-                    }`}>
-                      {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                    </div>
-                    <input
-                      type="radio"
-                      name={`question-${currentQuestionIndex}`}
-                      value={option}
-                      checked={isSelected}
-                      onChange={() => handleOptionChange(currentQuestionIndex, option)}
-                      className="sr-only" // Hide default radio button
-                    />
-                    <span className={`text-base ${isSelected ? 'text-indigo-800 font-medium' : 'text-gray-700'}`}>
-                      {option}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <QuestionCard
+          question={currentQuestion}
+          questionIndex={currentQuestionIndex}
+          userAnswer={userAnswers[currentQuestionIndex]}
+          onOptionChange={handleOptionChange}
+          transition={slideTransition}
+        />
         
-        {/* Navigation Buttons */}
-        <div className="flex justify-between items-center">
-          <button
-            onClick={previousQuestion}
-            disabled={currentQuestionIndex === 0}
-            className={`px-5 py-2.5 flex items-center rounded-lg ${
-              currentQuestionIndex === 0
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
-            }`}
-          >
-            <FaArrowLeft className="mr-2" /> Previous
-          </button>
-          
-          <div className="text-sm text-gray-500">
-            Question {currentQuestionIndex + 1} of {totalQuestions}
-          </div>
-          
-          {isLastQuestion ? (
-            <button
-              onClick={handleSubmitQuiz}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow hover:shadow-lg transition-all transform hover:-translate-y-1"
-            >
-              Submit Quiz
-            </button>
-          ) : (
-            <button
-              onClick={nextQuestion}
-              className="px-5 py-2.5 flex items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow hover:shadow-lg transition-all transform hover:-translate-y-1"
-            >
-              Next <FaArrowRight className="ml-2" />
-            </button>
-          )}
-        </div>
+        <QuizNavigation
+          currentQuestion={currentQuestionIndex + 1}
+          totalQuestions={totalQuestions}
+          isFirstQuestion={currentQuestionIndex === 0}
+          isLastQuestion={isLastQuestion}
+          onPrevious={previousQuestion}
+          onNext={nextQuestion}
+          onSubmit={handleSubmitQuiz}
+        />
       </div>
       
       {/* Add CSS for slide transitions */}

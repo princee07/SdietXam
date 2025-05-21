@@ -113,8 +113,8 @@ const Navbar = () => {
             </button>
           ) : (
             <>
-              <NavLink to="/Host" className="hidden md:flex items-center gap-2 bg-blue-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-600 transition-colors duration-200">
-                Host
+              <NavLink to="/market" className="hidden md:flex items-center gap-2 bg-blue-500 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-full text-sm lg:text-base font-medium hover:bg-blue-600 transition-colors duration-200">
+                Market
               </NavLink>
               
               {/* Login Button with Dropdown */}
