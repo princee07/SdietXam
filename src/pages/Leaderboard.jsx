@@ -8,6 +8,7 @@ import LeaderboardTable from "../components/leaderboard/LeaderboardTable";
 import StatsSection from "../components/leaderboard/StatsSection";
 import MotivationalQuote from "../components/leaderboard/MotivationalQuote";
 // We'll use this structure but will replace with real data
+import Footer from "../components/Footer";
 import { programLabels } from "../data/leaderboardData";
 
 const Leaderboard = () => {
@@ -127,8 +128,11 @@ const Leaderboard = () => {
       <StatsSection />
       
       <MotivationalQuote />
+      
     </div>
+      
   );
+   
 };
 
 export default Leaderboard;

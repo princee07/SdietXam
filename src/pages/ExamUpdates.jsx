@@ -4,6 +4,7 @@ import {
   FaFilter, FaDownload, FaExclamationCircle, FaCheckCircle,
   FaSortAmountDown, FaBullhorn, FaInfoCircle, FaGraduationCap 
 } from "react-icons/fa";
+import Footer from "../components/Footer";
 
 const ExamUpdates = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -576,6 +577,7 @@ const ExamUpdates = () => {
           </div>
         </div>
       </section>
+      <Footer/>
     </div>
   );
 };

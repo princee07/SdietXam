@@ -10,6 +10,7 @@ import EarnMoneyCTA from "../components/marketplace/EarnMoneyCTA";
 import Testimonials from "../components/marketplace/Testimonials";
 import FAQSection from "../components/marketplace/FAQSection";
 import FinalCTA from "../components/marketplace/FinalCTA";
+import Footer from "../components/Footer";
 
 const Market = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -157,6 +158,7 @@ const Market = () => {
       
       {/* Final CTA */}
       <FinalCTA />
+      <Footer/>
     </div>
   );
 };

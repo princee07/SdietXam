@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Experts from "../images/Experts.png";
+import Footer from "../components/Footer";
 import { 
   FaBrain, FaRocket, FaLaptopCode, FaChartLine, FaCode, 
   FaGraduationCap, FaTrophy, FaRegLightbulb, FaRegClock,
@@ -274,6 +275,7 @@ const Practice = () => {
           </div>
         </div>
       </section>
+      <Footer/>
     </div>
   );
 };

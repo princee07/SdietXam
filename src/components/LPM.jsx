@@ -6,19 +6,19 @@ const LPM = () => {
             title: "learn",
             image:
                 "https://cdn.unstop.com/uploads/images/home/learn-bg-new.png?d=747x534",
-            link: "https://sdietxam.com/courses",
+            link: "/courses",
         },
         {
             title: "practice",
             image:
                 "https://cdn.unstop.com/uploads/images/home/practice-bg-new.png?d=747x533",
-            link: "https://sdietxam.com/practice",
+            link: "/practice",
         },
         {
             title: "mentorships",
             image:
                 "https://cdn.unstop.com/uploads/images/home/mentorships-bg-new.png?d=747x534",
-            link: "https://sdietxam.com/mentor",
+            link: "/mentor",
         },
     ];
 
